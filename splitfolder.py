@@ -17,12 +17,13 @@ from PyQt5 import QtCore
 
    
 class Splitfolder(QtCore.QObject):
-    def __init__(self, main_window, source_folder_path, destination_folder_images_path, destination_folder_labels_path):
+    def __init__(self, main_window, app, source_folder_path, destination_folder_images_path, destination_folder_labels_path):       
         QtCore.QObject.__init__(self)
+        self.main_window = main_window
+        self.app = app
         self.source_folder_path = source_folder_path
         self.destination_folder_images_path = destination_folder_images_path
         self.destination_folder_labels_path = destination_folder_labels_path
-        self.main_window = main_window
         self.create_train_test_val_folder()
         self.list_filenames = []
         self.list_train      = None
@@ -126,11 +127,12 @@ class Splitfolder(QtCore.QObject):
         copy the .jpg + .txt in seperated folder for train, test and val
     
         """
-        
+        n_train = len(self.list_train)
+        n_test = len(self.list_test)
+        n_val = len(self.list_val)
         self.main_window.progressBar.reset()
-        self.main_window.progressBar.setRange(0, len(self.list_train))
-        # self.main_window.progressBar.setMaximum(len(self.list_train))
-        # self.main_window.progressBar.setMinimum(0)
+        self.main_window.progressBar.setRange(0, (n_train + n_test + n_val))
+
         
         for count, file in enumerate(self.list_train):
             name, ext = os.path.splitext(file)
@@ -138,22 +140,30 @@ class Splitfolder(QtCore.QObject):
             shutil.copy(self.source_folder_path + file, self.destination_folder_images_path + "/train")
             shutil.copy(self.source_folder_path + txt_file, self.destination_folder_labels_path + "/train")
             self.main_window.progressBar.setValue(count+1)
+            self.app.processEvents()
             # print(count)
             # print(len(self.list_train))
+            
         self.print_text_in_console("number of train images: " + str(self.number_of_train))
             
-        for file in self.list_test:
+        for count, file in enumerate(self.list_test):
             name, ext = os.path.splitext(file)
             txt_file  = name + ".txt"
             shutil.copy(self.source_folder_path + file, self.destination_folder_images_path + "/test")
             shutil.copy(self.source_folder_path + txt_file, self.destination_folder_labels_path + "/test")
+            self.main_window.progressBar.setValue(n_train + count+1)
+            self.app.processEvents()
+            
         self.print_text_in_console("number of test images: " + str(self.number_of_test))
             
-        for file in self.list_val:
+        for count, file in enumerate(self.list_val):
             name, ext = os.path.splitext(file)
             txt_file  = name + ".txt"
             shutil.copy(self.source_folder_path + file, self.destination_folder_images_path + "/val")
             shutil.copy(self.source_folder_path + txt_file, self.destination_folder_labels_path + "/val")
+            self.main_window.progressBar.setValue(n_train + n_test + count+1)
+            self.app.processEvents()
+            
         self.print_text_in_console("number of val images: " + str(self.number_of_val))    
     
     def print_text_in_console(self, text):

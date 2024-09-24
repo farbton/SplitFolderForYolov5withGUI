@@ -21,6 +21,7 @@ class Window(QMainWindow):
     def __init__(self, app):       
         super(Window, self).__init__()       
         uic.loadUi("splitFolderGui.ui", self)
+        self.app = app
         self.source_folder_path = "source/"
         self.destination_folder_images_path = "destination/images/"
         self.destination_folder_labels_path = "destination/labels/"
@@ -84,7 +85,8 @@ class Window(QMainWindow):
         self.scrollArea.verticalScrollBar().setValue(self.scrollArea.verticalScrollBar().maximum())
         
     def split(self):
-        self.splitfolder = splitfolder.Splitfolder(self, 
+        self.splitfolder = splitfolder.Splitfolder(self,
+                                                   self.app,
                                                    self.source_folder_path, 
                                                    self.destination_folder_images_path, 
                                                    self.destination_folder_labels_path)
